@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 
 @SpringBootApplication
 public class AttendanceReportConverterApplication implements CommandLineRunner {
@@ -23,6 +24,9 @@ public class AttendanceReportConverterApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		service.convert();
+		// TODO 対象年月はコマンドラインパラメーターから取得する
+		YearMonth targetYearMonth = YearMonth.now();
+		service.convert(targetYearMonth);
 	}
+
 }
