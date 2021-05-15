@@ -12,10 +12,10 @@ import java.time.YearMonth;
 public class AttendanceReportConverterService {
 
     @Autowired
-    private SebAttendanceReportRepository sebRepository;
+    SebAttendanceReportRepository sebRepository;
 
     @Autowired
-    private AnsAttendanceReportRepository ansRepository;
+    AnsAttendanceReportRepository ansRepository;
 
     public void convert(YearMonth targetYearMonth) {
         AttendanceReport attendanceReport = sebRepository.findByYearMonth(targetYearMonth).orElseThrow();

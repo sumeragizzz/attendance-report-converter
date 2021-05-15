@@ -1,26 +1,20 @@
 package dev.sumeragizzz.attendancereportconverter.domain;
 
 import java.time.Duration;
-import java.time.Year;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class AttendanceReport {
 
-    private List<Attendance> attendances;
+    final List<Attendance> attendances;
 
-    private YearMonth yearMonth;
+    final YearMonth yearMonth;
 
-    private Duration totalWorkingHours;
+    final Duration totalWorkingHours;
 
     public AttendanceReport(List<Attendance> attendances) {
         this.attendances = Objects.requireNonNull(attendances);
@@ -28,19 +22,19 @@ public class AttendanceReport {
         this.totalWorkingHours = summaryTotalWorkingHours(attendances);
     }
 
-    private YearMonth extractYearMonth(List<Attendance> attendances) {
+    YearMonth extractYearMonth(List<Attendance> attendances) {
         List<YearMonth> yearMonths = attendances.stream()
                 .map(Attendance::targetedOn)
                 .map(YearMonth::from)
                 .distinct()
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         if (yearMonths.size() != 1) {
             throw new IllegalArgumentException();
         }
         return yearMonths.get(0);
     }
 
-    private Duration summaryTotalWorkingHours(List<Attendance> attendances) {
+    Duration summaryTotalWorkingHours(List<Attendance> attendances) {
         return attendances.stream()
                 .map(Attendance::workingHours)
                 .collect(Collector.of(AtomicLong::new,
