@@ -8,6 +8,7 @@ public class AnsAttendanceReportRepository {
 
     public void store(AttendanceReport attendanceReport) {
         // TODO 未実装
+        attendanceReport.getAttendances().forEach(System.out::println);
     }
 
 }

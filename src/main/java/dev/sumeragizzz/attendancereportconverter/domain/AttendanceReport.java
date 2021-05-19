@@ -37,6 +37,7 @@ public class AttendanceReport {
     Duration summaryTotalWorkingHours(List<Attendance> attendances) {
         return attendances.stream()
                 .map(Attendance::workingHours)
+                .filter(Objects::nonNull)
                 .collect(Collector.of(AtomicLong::new,
                         (AtomicLong minutes, Duration duration) -> minutes.addAndGet(duration.toMinutes()),
                         (AtomicLong a, AtomicLong b) -> new AtomicLong(a.get() + b.get()),
@@ -55,4 +56,12 @@ public class AttendanceReport {
         return totalWorkingHours;
     }
 
+    @Override
+    public String toString() {
+        return "AttendanceReport{" +
+                "attendances=" + attendances +
+                ", yearMonth=" + yearMonth +
+                ", totalWorkingHours=" + totalWorkingHours +
+                '}';
+    }
 }

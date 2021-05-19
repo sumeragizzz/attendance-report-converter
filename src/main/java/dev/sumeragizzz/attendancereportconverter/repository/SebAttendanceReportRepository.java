@@ -16,31 +16,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.net.URL;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Repository
 public class SebAttendanceReportRepository {
 
-    static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy年 M月");
+    /** 年月パーサー */
+    static final DateTimeFormatter PARSER_YEAR_MONTH = DateTimeFormatter.ofPattern("yyyy年 M月");
+
+    /** 月日パーサー */
+    static final DateTimeFormatter PARSER_MONTH_DAY = DateTimeFormatter.ofPattern("M/[ ]d");
+
+    /** 時分パーサー */
+    static final DateTimeFormatter PARSER_HOUR_MINUTE = DateTimeFormatter.ofPattern("H:mm");
+
+    /** 時間パターン */
+    static final Pattern PATTERN_HOURS = Pattern.compile("(\\d{1,2}):(\\d{2})");
 
     @Autowired
     ParameterConfiguration config;
 
     public Optional<AttendanceReport> findByYearMonth(YearMonth targetYearMonth) {
-        System.out.println("********");
-        System.out.println(config.getTargetYearMonth());
-        System.out.println(config.getUrl());
-        System.out.println(config.getId());
-        System.out.println(config.getPassword());
-        System.out.println("********");
-
         // WebDriver生成
         WebDriver driver = createWebDriver();
         try {
@@ -51,21 +54,14 @@ public class SebAttendanceReportRepository {
             driver.findElement(By.id("btn00")).click();
 
             // 対象年月のページに切り替え
-            moveTargetYearMonth(driver, config.getTargetYearMonth());
+            moveTargetYearMonth(driver, targetYearMonth);
 
             // テーブル解析
-            parseTable(driver, config.getTargetYearMonth());
+            return Optional.of(new AttendanceReport(parseTable(driver, targetYearMonth)));
 
         } finally {
             driver.quit();
         }
-
-        // TODO 未実装
-        return Optional.of(new AttendanceReport(List.of(new Attendance(
-                LocalDate.of(2021, 5, 6),
-                LocalTime.of(9, 0),
-                LocalTime.of(18,0),
-                Duration.ofHours(8)))));
     }
 
     WebDriver createWebDriver() {
@@ -94,7 +90,7 @@ public class SebAttendanceReportRepository {
         WebElement checkButton = driver.findElement(By.id("checkAuthPolisyBtn"));
         checkButton.click();
 
-        // パスワード入力 →　ログイン
+        // パスワード入力 → ログイン
         WebElement passwordField = driver.findElement(By.id("Password"));
         passwordField.sendKeys(password);
         WebElement loginButton = driver.findElement(By.id("login"));
@@ -105,7 +101,7 @@ public class SebAttendanceReportRepository {
         // 現在表示中の年月を取得
         By yearMonthCondition = By.id("js-attendanceResultTime__yearMonth");
         String currentYearMonthText = driver.findElement(yearMonthCondition).getText();
-        YearMonth currentYearMonth = YearMonth.parse(currentYearMonthText, FORMATTER);
+        YearMonth currentYearMonth = YearMonth.parse(currentYearMonthText, PARSER_YEAR_MONTH);
 
         // 対象年月になっている場合は処理終了
         if (targetYearMonth.equals(currentYearMonth)) {
@@ -131,20 +127,44 @@ public class SebAttendanceReportRepository {
         Document document = Jsoup.parse(driver.getPageSource());
 
         // 日数ループ
-        int daysOfMonth = targetYearMonth.lengthOfMonth();
-        for (int i = 1; i <= daysOfMonth; i++) {
-            // 申請 - 日付 - 曜日
-            String dateText = document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=1]", i)).text();
+        List<Attendance> attendances = new ArrayList<>();
+        for (int i = 1, daysOfMonth = targetYearMonth.lengthOfMonth(); i <= daysOfMonth; i++) {
+            // 日付
+            LocalDate targetedOn = parseDate(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=1]", i)).text(), targetYearMonth.getYear());
 
-            // 事由 〜
-            String startTimeText = document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=4]", i)).text();
-            String endTimeText = document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=5]", i)).text();
-            String activeTimeText = document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text();
+            // 出勤時刻 - 退出時刻 - 総労働時間
+            LocalTime startedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=4]", i)).text());
+            LocalTime endedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=5]", i)).text());
+            Duration workingHours = parseHours(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text());
 
-            System.out.format("%d : %s : %s : %s : %s%n", i, dateText, startTimeText, endTimeText, activeTimeText);
+            // ドメインモデル生成
+            attendances.add(new Attendance(targetedOn, startedAt, endedAt, workingHours));
         }
 
-        return List.of();
+        return attendances;
+    }
+
+    LocalDate parseDate(String text, int year) {
+        return MonthDay.parse(text, PARSER_MONTH_DAY).atYear(year);
+    }
+
+    LocalTime parseTime(String text) {
+        if (text == null || text.length() == 0) {
+            return null;
+        }
+        return LocalTime.parse(text.strip(), PARSER_HOUR_MINUTE);
+    }
+
+    Duration parseHours(String text) {
+        if (text == null || text.length() == 0) {
+            return null;
+        }
+        Matcher matcher = PATTERN_HOURS.matcher(text);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException();
+        }
+        return Duration.ofHours(Long.parseLong(matcher.group(1)))
+                .plus(Duration.ofMinutes(Long.parseLong(matcher.group(2))));
     }
 
 }
