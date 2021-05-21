@@ -43,6 +43,7 @@ public class SebAttendanceReportRepository {
     @Autowired
     ParameterConfiguration config;
 
+    // TODO 戻り値の型を再検討
     public Optional<AttendanceReport> findByYearMonth(YearMonth targetYearMonth) {
         // WebDriver生成
         WebDriver driver = createWebDriver();
