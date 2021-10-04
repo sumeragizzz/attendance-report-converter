@@ -29,10 +29,10 @@ import java.util.regex.Pattern;
 public class SebAttendanceReportRepository {
 
     /** 年月パーサー */
-    static final DateTimeFormatter PARSER_YEAR_MONTH = DateTimeFormatter.ofPattern("yyyy年 M月");
+    static final DateTimeFormatter PARSER_YEAR_MONTH = DateTimeFormatter.ofPattern("yyyy年ppM月");
 
     /** 月日パーサー */
-    static final DateTimeFormatter PARSER_MONTH_DAY = DateTimeFormatter.ofPattern("M/[ ]d");
+    static final DateTimeFormatter PARSER_MONTH_DAY = DateTimeFormatter.ofPattern("M/ppd");
 
     /** 時分パーサー */
     static final DateTimeFormatter PARSER_HOUR_MINUTE = DateTimeFormatter.ofPattern("H:mm");
@@ -131,12 +131,12 @@ public class SebAttendanceReportRepository {
         List<Attendance> attendances = new ArrayList<>();
         for (int i = 1, daysOfMonth = targetYearMonth.lengthOfMonth(); i <= daysOfMonth; i++) {
             // 日付
-            LocalDate targetedOn = parseDate(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=1]", i)).text(), targetYearMonth.getYear());
+            LocalDate targetedOn = parseDate(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=1]", i)).text(), targetYearMonth.getYear()).orElseThrow();
 
             // 出勤時刻 - 退出時刻 - 総労働時間
-            LocalTime startedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=4]", i)).text());
-            LocalTime endedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=5]", i)).text());
-            Duration workingHours = parseHours(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text());
+            LocalTime startedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=4]", i)).text()).orElse(null);
+            LocalTime endedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=5]", i)).text()).orElse(null);
+            Duration workingHours = parseHours(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text()).orElse(null);
 
             // ドメインモデル生成
             attendances.add(new Attendance(targetedOn, startedAt, endedAt, workingHours));
@@ -145,27 +145,30 @@ public class SebAttendanceReportRepository {
         return attendances;
     }
 
-    LocalDate parseDate(String text, int year) {
-        return MonthDay.parse(text, PARSER_MONTH_DAY).atYear(year);
-    }
-
-    LocalTime parseTime(String text) {
+    Optional<LocalDate> parseDate(String text, int year) {
         if (text == null || text.length() == 0) {
-            return null;
+            return Optional.empty();
         }
-        return LocalTime.parse(text.strip(), PARSER_HOUR_MINUTE);
+        return Optional.of(MonthDay.parse(text, PARSER_MONTH_DAY).atYear(year));
     }
 
-    Duration parseHours(String text) {
+    Optional<LocalTime> parseTime(String text) {
         if (text == null || text.length() == 0) {
-            return null;
+            return Optional.empty();
+        }
+        return Optional.of(LocalTime.parse(text.strip(), PARSER_HOUR_MINUTE));
+    }
+
+    Optional<Duration> parseHours(String text) {
+        if (text == null || text.length() == 0) {
+            return Optional.empty();
         }
         Matcher matcher = PATTERN_HOURS.matcher(text);
         if (!matcher.matches()) {
             throw new IllegalArgumentException();
         }
-        return Duration.ofHours(Long.parseLong(matcher.group(1)))
-                .plus(Duration.ofMinutes(Long.parseLong(matcher.group(2))));
+        return Optional.of(Duration.ofHours(Integer.parseInt(matcher.group(1)))
+                .plus(Duration.ofMinutes(Integer.parseInt(matcher.group(2)))));
     }
 
 }
