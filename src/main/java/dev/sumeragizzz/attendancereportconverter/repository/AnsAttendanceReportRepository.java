@@ -1,6 +1,7 @@
 package dev.sumeragizzz.attendancereportconverter.repository;
 
 import dev.sumeragizzz.attendancereportconverter.ParameterConfiguration;
+import dev.sumeragizzz.attendancereportconverter.domain.Attendance;
 import dev.sumeragizzz.attendancereportconverter.domain.AttendanceReport;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalTime;
+import java.util.Optional;
 
 @Repository
 public class AnsAttendanceReportRepository {
@@ -33,10 +36,19 @@ public class AnsAttendanceReportRepository {
                 Cell startedAtCell = row.getCell(4);
                 Cell endedAtCell = row.getCell(5);
                 System.out.println(startedAtCell.getStringCellValue() + " : " + endedAtCell.getStringCellValue());
+
+                // FIXME 日数の差異はクリアする必要あり
+                if (i >= attendanceReport.getAttendances().size()) {
+                    continue;
+                }
+                Attendance attendance = attendanceReport.getAttendances().get(i);
+
+                startedAtCell.setCellValue(Optional.ofNullable(attendance.startedAt()).map(LocalTime::toString).orElse(""));
+                endedAtCell.setCellValue(Optional.ofNullable(attendance.endedAt()).map(LocalTime::toString).orElse(""));
             }
 
             // TODO Excelファイル保存
-//            saveBook(book, Paths.get("output.xlsx"));
+            saveBook(book, Paths.get("target/output.xlsx"));
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -44,8 +56,10 @@ public class AnsAttendanceReportRepository {
     }
 
     Workbook openBook(Path reportFile) throws IOException {
-        // readOnlyをtrueにしないと、参照しただけでExcelファイルが更新されてしまう為、trueを指定
-        return WorkbookFactory.create(config.getReportFile().toFile(), null, true);
+        // Fileを渡すと、参照しただけでExcelファイルが更新されてしまう為、InputStreamを使用
+        try (InputStream input = Files.newInputStream(reportFile)) {
+            return WorkbookFactory.create(input);
+        }
     }
 
     void saveBook(Workbook book, Path reportFile) throws IOException {
