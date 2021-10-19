@@ -24,7 +24,7 @@ public class AttendanceReport {
 
     YearMonth extractYearMonth(List<Attendance> attendances) {
         List<YearMonth> yearMonths = attendances.stream()
-                .map(Attendance::targetedOn)
+                .map(Attendance::getTargetedOn)
                 .map(YearMonth::from)
                 .distinct()
                 .toList();
@@ -36,7 +36,7 @@ public class AttendanceReport {
 
     Duration summaryTotalWorkingHours(List<Attendance> attendances) {
         return attendances.stream()
-                .map(Attendance::workingHours)
+                .map(Attendance::getWorkingHours)
                 .filter(Objects::nonNull)
                 .collect(Collector.of(AtomicLong::new,
                         (AtomicLong minutes, Duration duration) -> minutes.addAndGet(duration.toMinutes()),

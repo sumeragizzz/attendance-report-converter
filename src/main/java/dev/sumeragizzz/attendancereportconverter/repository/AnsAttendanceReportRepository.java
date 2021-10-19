@@ -24,30 +24,34 @@ public class AnsAttendanceReportRepository {
     ParameterConfiguration config;
 
     public void store(AttendanceReport attendanceReport) {
-        attendanceReport.getAttendances().forEach(System.out::println);
-        System.out.println(config.getReportFile());
-
         // Excelファイルオープン
         try (Workbook book = openBook(config.getReportFile())) {
-            // TODO 編集処理
             Sheet sheet = book.getSheet("勤務表");
+
+            // 年月設定
+            sheet.getRow(0).getCell(4).setCellValue(attendanceReport.getYearMonth().getYear());
+            sheet.getRow(0).getCell(6).setCellValue(attendanceReport.getYearMonth().getMonthValue());
+
+            // 最大31日分の入力欄をループして処理
             for (int i = 0; i < 31; i++) {
                 Row row = sheet.getRow(9 + i);
-                Cell startedAtCell = row.getCell(4);
-                Cell endedAtCell = row.getCell(5);
-                System.out.println(startedAtCell.getStringCellValue() + " : " + endedAtCell.getStringCellValue());
 
-                // FIXME 日数の差異はクリアする必要あり
-                if (i >= attendanceReport.getAttendances().size()) {
-                    continue;
+                // 入力欄セル初期化
+                for (int j = 0; j < 5; j++) {
+                    row.getCell(4 + j).setBlank();
                 }
-                Attendance attendance = attendanceReport.getAttendances().get(i);
 
-                startedAtCell.setCellValue(Optional.ofNullable(attendance.startedAt()).map(LocalTime::toString).orElse(""));
-                endedAtCell.setCellValue(Optional.ofNullable(attendance.endedAt()).map(LocalTime::toString).orElse(""));
+                if (i >= attendanceReport.getAttendances().size()) {
+                    break;
+                }
+
+                // 出勤時間/退社時間を設定
+                Attendance attendance = attendanceReport.getAttendances().get(i);
+                attendance.getStartedAt().map(LocalTime::toString).ifPresent(startedAt -> row.getCell(4).setCellValue(startedAt));
+                attendance.getEndedAt().map(LocalTime::toString).ifPresent(endedAt -> row.getCell(5).setCellValue(endedAt));
             }
 
-            // TODO Excelファイル保存
+            // Excelファイル保存
             saveBook(book, Paths.get("target/output.xlsx"));
 
         } catch (IOException e) {

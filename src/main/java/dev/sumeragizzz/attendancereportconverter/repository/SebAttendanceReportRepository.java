@@ -136,7 +136,7 @@ public class SebAttendanceReportRepository {
             // 出勤時刻 - 退出時刻 - 総労働時間
             LocalTime startedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=4]", i)).text()).orElse(null);
             LocalTime endedAt = parseTime(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=5]", i)).text()).orElse(null);
-            Duration workingHours = parseHours(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text()).orElse(null);
+            Duration workingHours = parseHours(document.select(String.format("tr[data-rowindex=%d] td[data-columnindex=6]", i)).text()).orElse(Duration.ZERO);
 
             // ドメインモデル生成
             attendances.add(new Attendance(targetedOn, startedAt, endedAt, workingHours));
