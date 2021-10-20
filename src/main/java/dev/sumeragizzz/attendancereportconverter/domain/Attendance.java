@@ -20,6 +20,7 @@ public class Attendance {
         this.targetedOn = Objects.requireNonNull(targetedOn);
         this.startedAt = startedAt;
         this.endedAt = endedAt;
+        // TODO 自動計算するべきか検討する
         this.workingHours = Objects.requireNonNull(workingHours);
     }
 
@@ -37,6 +38,10 @@ public class Attendance {
 
     public Duration getWorkingHours() {
         return workingHours;
+    }
+
+    public Attendance withEndedAt(LocalTime newEndedAt) {
+        return new Attendance(targetedOn, startedAt, newEndedAt, workingHours);
     }
 
 }
