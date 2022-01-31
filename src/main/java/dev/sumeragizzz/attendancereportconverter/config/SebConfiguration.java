@@ -1,4 +1,4 @@
-package dev.sumeragizzz.attendancereportconverter;
+package dev.sumeragizzz.attendancereportconverter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -8,26 +8,13 @@ import java.nio.file.Path;
 import java.time.YearMonth;
 
 @Component
-@ConfigurationProperties("parameter")
-public class ParameterConfiguration {
-
-    YearMonth targetYearMonth = YearMonth.now();
-
+@ConfigurationProperties("seb")
+public class SebConfiguration {
     URL url;
 
     String id;
 
     String password;
-
-    Path reportFile;
-
-    public YearMonth getTargetYearMonth() {
-        return targetYearMonth;
-    }
-
-    public void setTargetYearMonth(YearMonth targetYearMonth) {
-        this.targetYearMonth = targetYearMonth;
-    }
 
     public URL getUrl() {
         return url;
@@ -53,22 +40,11 @@ public class ParameterConfiguration {
         this.password = password;
     }
 
-    public Path getReportFile() {
-        return reportFile;
-    }
-
-    public void setReportFile(Path reportFile) {
-        this.reportFile = reportFile;
-    }
-
     @Override
     public String toString() {
-        return "ParameterConfiguration{" +
-                "targetYearMonth=" + targetYearMonth +
-                ", url=" + url +
+        return "SebConfiguration{" +
+                "url=" + url +
                 ", id='" + id + '\'' +
-                ", reportFile=" + reportFile +
                 '}';
     }
-
 }

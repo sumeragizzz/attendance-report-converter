@@ -1,6 +1,6 @@
 package dev.sumeragizzz.attendancereportconverter.repository;
 
-import dev.sumeragizzz.attendancereportconverter.ParameterConfiguration;
+import dev.sumeragizzz.attendancereportconverter.config.SebConfiguration;
 import dev.sumeragizzz.attendancereportconverter.domain.Attendance;
 import dev.sumeragizzz.attendancereportconverter.domain.AttendanceReport;
 import org.jsoup.Jsoup;
@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 
 @Repository
 public class SebAttendanceReportRepository {
-
     /** 年月パーサー */
     static final DateTimeFormatter PARSER_YEAR_MONTH = DateTimeFormatter.ofPattern("yyyy年ppM月");
 
@@ -41,7 +40,7 @@ public class SebAttendanceReportRepository {
     static final Pattern PATTERN_HOURS = Pattern.compile("(\\d{1,2}):(\\d{2})");
 
     @Autowired
-    ParameterConfiguration config;
+    SebConfiguration config;
 
     // TODO 戻り値の型を再検討
     public Optional<AttendanceReport> findByYearMonth(YearMonth targetYearMonth) {
@@ -170,5 +169,4 @@ public class SebAttendanceReportRepository {
         return Optional.of(Duration.ofHours(Integer.parseInt(matcher.group(1)))
                 .plus(Duration.ofMinutes(Integer.parseInt(matcher.group(2)))));
     }
-
 }

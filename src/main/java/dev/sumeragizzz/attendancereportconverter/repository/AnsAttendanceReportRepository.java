@@ -1,6 +1,6 @@
 package dev.sumeragizzz.attendancereportconverter.repository;
 
-import dev.sumeragizzz.attendancereportconverter.ParameterConfiguration;
+import dev.sumeragizzz.attendancereportconverter.config.AnsConfiguration;
 import dev.sumeragizzz.attendancereportconverter.domain.Attendance;
 import dev.sumeragizzz.attendancereportconverter.domain.AttendanceReport;
 import org.apache.poi.ss.usermodel.*;
@@ -15,17 +15,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.Optional;
 
 @Repository
 public class AnsAttendanceReportRepository {
-
     @Autowired
-    ParameterConfiguration config;
+    AnsConfiguration config;
 
     public void store(AttendanceReport attendanceReport) {
         // Excelファイルオープン
-        try (Workbook book = openBook(config.getReportFile())) {
+        try (Workbook book = openBook(config.getTemplateFile())) {
             Sheet sheet = book.getSheet("勤務表");
 
             // 年月設定
@@ -52,7 +50,7 @@ public class AnsAttendanceReportRepository {
             }
 
             // Excelファイル保存
-            saveBook(book, Paths.get("target/output.xlsx"));
+            saveBook(book, config.getOutputFile());
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -71,5 +69,4 @@ public class AnsAttendanceReportRepository {
             book.write(output);
         }
     }
-
 }
