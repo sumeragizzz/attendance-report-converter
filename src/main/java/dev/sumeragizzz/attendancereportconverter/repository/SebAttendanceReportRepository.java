@@ -48,7 +48,7 @@ public class SebAttendanceReportRepository {
         WebDriver driver = createWebDriver();
         try {
             // ログイン
-            login(driver, config.getUrl(), config.getId(), config.getPassword());
+            login(driver, config.url(), config.id(), config.password());
 
             // 勤務実績照会
             driver.findElement(By.id("btn00")).click();

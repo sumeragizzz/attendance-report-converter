@@ -3,7 +3,10 @@ package dev.sumeragizzz.attendancereportconverter.repository;
 import dev.sumeragizzz.attendancereportconverter.config.AnsConfiguration;
 import dev.sumeragizzz.attendancereportconverter.domain.Attendance;
 import dev.sumeragizzz.attendancereportconverter.domain.AttendanceReport;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +16,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalTime;
 
 @Repository
@@ -23,7 +25,7 @@ public class AnsAttendanceReportRepository {
 
     public void store(AttendanceReport attendanceReport) {
         // Excelファイルオープン
-        try (Workbook book = openBook(config.getTemplateFile())) {
+        try (Workbook book = openBook(config.templateFile())) {
             Sheet sheet = book.getSheet("勤務表");
 
             // 年月設定
@@ -50,7 +52,7 @@ public class AnsAttendanceReportRepository {
             }
 
             // Excelファイル保存
-            saveBook(book, config.getOutputFile());
+            saveBook(book, config.outputFile());
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
