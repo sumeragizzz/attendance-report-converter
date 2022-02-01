@@ -1,31 +1,28 @@
 package dev.sumeragizzz.attendancereportconverter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.ConstructorBinding;
 
 import java.nio.file.Path;
 
-@Component
 @ConfigurationProperties("ans")
-public class AnsConfiguration {
-    Path templateFile;
+@ConstructorBinding
+public final class AnsConfiguration {
+    final Path templateFile;
 
-    Path outputFile;
+    final Path outputFile;
+
+    public AnsConfiguration(Path templateFile, Path outputFile) {
+        this.templateFile = templateFile;
+        this.outputFile = outputFile;
+    }
 
     public Path getTemplateFile() {
         return templateFile;
     }
 
-    public void setTemplateFile(Path templateFile) {
-        this.templateFile = templateFile;
-    }
-
     public Path getOutputFile() {
         return outputFile;
-    }
-
-    public void setOutputFile(Path outputFile) {
-        this.outputFile = outputFile;
     }
 
     @Override
