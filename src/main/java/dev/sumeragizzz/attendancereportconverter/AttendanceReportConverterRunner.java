@@ -1,5 +1,7 @@
 package dev.sumeragizzz.attendancereportconverter;
 
+import dev.sumeragizzz.attendancereportconverter.config.AnsConfiguration;
+import dev.sumeragizzz.attendancereportconverter.config.SebConfiguration;
 import dev.sumeragizzz.attendancereportconverter.service.AttendanceReportConverterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +20,16 @@ public class AttendanceReportConverterRunner implements ApplicationRunner {
     @Autowired
     AttendanceReportConverterService service;
 
+    @Autowired
+    SebConfiguration sebConfiguration;
+
+    @Autowired
+    AnsConfiguration ansConfiguration;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        LOGGER.info(String.valueOf(sebConfiguration));
+        LOGGER.info(String.valueOf(ansConfiguration));
         // パラメーター対象年月をチェック
         var targetYearMonth = validateArgument(args, "targetYearMonth", YearMonth::parse);
         LOGGER.info("start. targetYearMonth: {}", targetYearMonth);
