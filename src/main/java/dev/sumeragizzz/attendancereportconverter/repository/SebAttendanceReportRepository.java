@@ -69,9 +69,9 @@ public class SebAttendanceReportRepository {
         ChromeOptions options = new ChromeOptions();
         options.setHeadless(true);
 
-        // WebDriver
-        // TODO WebDriverのパス指定
-        System.setProperty("webdriver.chrome.driver", "driver/chromedriver");
+        // WebDriverのパス指定されていればそのパス、指定されていなければデフォルトのパスとする。
+        String driverPath = System.getProperty("webdriver.chrome.driver", "driver/chromedriver");
+        System.setProperty("webdriver.chrome.driver", driverPath);
         ChromeDriver driver = new ChromeDriver(options);
 
         // 暗黙的な待機
@@ -112,7 +112,7 @@ public class SebAttendanceReportRepository {
             throw new IllegalArgumentException();
         }
 
-        // 前月ボタンを押下して過去を遡る
+        // 前月ボタンを押下して過去を遡る。
         driver.findElement(By.id("js-beforeMonthBtn")).click();
         // 年月要素は最初から存在しており「暗黙的な待機」では待機されない為、値が変化したことを条件に待機する。
         WebDriverWait wait = new WebDriverWait(driver, 10);
