@@ -1,18 +1,18 @@
 @echo off
 setlocal
 
-# 環境に応じて利用者が設定
+rem 環境に応じて利用者が設定
 set seburl={URL}
 set sebid={ID}
 set anstemplate={Template File Path}
 
-# パラメーターチェック
+rem パラメーターチェック
 if "%~1" == "" (
-    echo %~nx0 targetYearMonth(yyyy-MM) [outputFile]
+    echo %~nx0 targetYearMonth(yyyy-MM^) [outputFile]
     exit /b -1
 )
 
-# 実行時に入力
+rem 実行時に入力
 set /p sebpassword="input password: "
 
 set options="-Dwebdriver.chrome.driver=chromedriver.exe"
