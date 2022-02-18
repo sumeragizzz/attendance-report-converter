@@ -41,14 +41,12 @@ public class AnsAttendanceReportRepository {
                     row.getCell(4 + j).setBlank();
                 }
 
-                if (i >= attendanceReport.getAttendances().size()) {
-                    break;
+                // 勤怠情報がある場合は出勤時間/退社時間を設定
+                if (i < attendanceReport.getAttendances().size()) {
+                    Attendance attendance = attendanceReport.getAttendances().get(i);
+                    attendance.getStartedAt().map(LocalTime::toString).ifPresent(startedAt -> row.getCell(4).setCellValue(startedAt));
+                    attendance.getEndedAt().map(LocalTime::toString).ifPresent(endedAt -> row.getCell(5).setCellValue(endedAt));
                 }
-
-                // 出勤時間/退社時間を設定
-                Attendance attendance = attendanceReport.getAttendances().get(i);
-                attendance.getStartedAt().map(LocalTime::toString).ifPresent(startedAt -> row.getCell(4).setCellValue(startedAt));
-                attendance.getEndedAt().map(LocalTime::toString).ifPresent(endedAt -> row.getCell(5).setCellValue(endedAt));
             }
 
             // Excelファイル保存
