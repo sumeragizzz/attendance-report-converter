@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>dev.sumeragizzz</groupId>
 	<artifactId>attendance-report-converter</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>attendance-report-converter</name>
 	<description>勤怠報告のフォーマットを変換する。</description>
 

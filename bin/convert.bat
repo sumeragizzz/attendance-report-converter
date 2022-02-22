@@ -27,7 +27,7 @@ set opts=%opts% -Dans.templateFile=%scriptDir%/%anstemplate%
 set opts=%opts% -Dans.outputFile=%ansoutput%
 
 rem 実行
-java %opts% -jar %scriptDir%/attendance-report-converter-0.0.1-SNAPSHOT.jar --targetYearMonth=%~1
+java %opts% -jar %scriptDir%/attendance-report-converter-0.0.1.jar --targetYearMonth=%~1
 
 endlocal
 exit /b 0

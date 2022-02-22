@@ -26,6 +26,6 @@ opts="$opts -Dans.templateFile=$scriptDir/$anstemplate"
 opts="$opts -Dans.outputFile=$ansoutput"
 
 # 実行
-java ${=opts} -jar $scriptDir/attendance-report-converter-0.0.1-SNAPSHOT.jar --targetYearMonth=$1
+java ${=opts} -jar $scriptDir/attendance-report-converter-0.0.1.jar --targetYearMonth=$1
 
 exit 0
